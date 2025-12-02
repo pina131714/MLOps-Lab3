@@ -46,7 +46,7 @@ MLOps-Lab3/
 ├── Makefile                   # Automation scripts
 ├── pyproject.toml             # Dependency management
 └── README.md                  # This file
-
+```
 
 ## Setup and Installation
 
