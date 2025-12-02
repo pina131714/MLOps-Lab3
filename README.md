@@ -1,110 +1,138 @@
-[![CICD](https://github.com/pina131714/MLOps-Lab2/actions/workflows/CICD.yml/badge.svg)](https://github.com/pina131714/MLOps-Lab2/actions/workflows/CICD.yml)
+[![CICD](https://github.com/pina131714/MLOps-Lab3/actions/workflows/CICD.yml/badge.svg)](https://github.com/pina131714/MLOps-Lab3/actions/workflows/CICD.yml)
 
-# MLOps-Lab2: Image Processing CI/CD Pipeline
+# MLOps-Lab3: Experiment Tracking and Model Versioning
+
 ## Project Overview
-This repository continues the work from Lab 1 and implements a Continuous Integration and Continuous Delivery (CI/CD) pipeline. The primary goal of Lab 2 is to deploy the image prediction application into production environments.
-The project is containerized and deployed in two key locations:
-1. API Backend: Containerized with Docker and deployed to Render.
-2. GUI Frontend: A Gradio application deployed to Hugging Face Spaces.
+This repository represents the third stage of the MLOps project series. Building upon the CI/CD pipeline from Lab 2, this lab replaces the random prediction logic with a **real Deep Learning classifier** trained on the **Oxford-IIIT Pet Dataset**.
 
-### Key Changes from Lab 1:
-- Dockerization: Project includes a multi-stage `Dockerfile`.
-- Deployment: Added jobs for pushing the Docker image to Docker Hub and triggering Render deployment.
-- Gradio GUI: A separate `hf-space` branch contains the Gradio application (`app.py` and `requirements.txt`).
-- CI/CD Workflow: The pipeline now manages testing, Docker building, and deployment across multiple platforms.
+The primary objective is to implement **Experiment Tracking** and **Model Versioning** using **MLFlow**. The project trains a **MobileNetV2** model using transfer learning, tracks experiments to select the best performing model, and serializes it to **ONNX** format for efficient production inference.
+
+### Key Changes from Lab 2:
+- **Real AI Model:** Replaced random prediction with a MobileNetV2 image classifier.
+- **Experiment Tracking:** Integrated **MLFlow** to log metrics, parameters, and models.
+- **Model Registry:** Implemented logic to programmatic query and select the best model.
+- **Serialization:** Added automated export of PyTorch models to **ONNX** format.
+- **Inference Engine:** Updated the API and CLI to use `onnxruntime` for predictions.
 
 ## Project Structure
-The project maintains the core application structure while adding deployment assets:
+The project structure has evolved to include training and serialization scripts:
 
 ```text
-MLOps-Lab1/
+MLOps-Lab3/
 ├── .github/
 │   └── workflows/
-│       └── CICD.yml           # Full CI/CD Workflow (Replaces old CI.yml)
+│       └── CICD.yml           # Full CI/CD Workflow
 ├── api/
-│   ├── api.py                 # FastAPI application and endpoints
+│   ├── api.py                 # FastAPI application
 │   └── __init__.py
 ├── cli/
 │   ├── cli.py                 # Click CLI interface
 │   └── __init__.py
 ├── mylib/
-│   ├── image_processor.py     # Core image processing logic (PIL, Numpy)
+│   ├── data_preprocess.py     # Data loading and transformation (Training phase)
+│   ├── image_processor.py     # ONNX Inference logic (Production phase)
+│   ├── serialize.py           # Model selection and ONNX export script
+│   ├── train.py               # MLFlow training and tracking script
 │   └── __init__.py
 ├── templates/
 │   └── home.html              # API documentation home page
 ├── tests/
-│   ├── test_api.py            # Tests for the FastAPI endpoints
-│   ├── test_cli.py            # Tests for the CLI commands
-│   ├── test_logic.py          # Unit tests for the core logic
+│   ├── test_api.py            # API Integration tests
+│   ├── test_cli.py            # CLI Integration tests
+│   ├── test_model_artifacts.py# Verifies ONNX model existence
 │   └── __init__.py
-├── Dockerfile                 # Added for containerization
-├── Makefile                   # Automation scripts (install, format, lint, test)
-├── pyproject.toml             # Dependency management (used by uv)
+├── .pylintrc                  # Pylint configuration for PyTorch/MLFlow
+├── Dockerfile                 # Production container definition
+├── Makefile                   # Automation scripts
+├── pyproject.toml             # Dependency management
 └── README.md                  # This file
-```
+
 
 ## Setup and Installation
-### Prerequisites:
-You must have Git, the `uv` package manager, and Docker installed globally.
 
-## Local Setup:
-Clone the Repository (Lab 2):
+### Prerequisites
+* **Git** installed globally.
+* **`uv`** package manager installed globally.
+* **Python 3.11** (Required for PyTorch compatibility in this lab).
+* **Docker** installed globally.
+
+### Local Setup
+1.  **Clone the Repository (Lab 3):**
+    ```bash
+    git clone [https://github.com/pina131714/MLOps-Lab3.git](https://github.com/pina131714/MLOps-Lab3.git)
+    cd MLOps-Lab3
+    ```
+
+2.  **Install Dependencies:**
+    The project is pinned to Python 3.11. The `Makefile` handles the sync. The `Makefile` simplifies environment setup by synchronizing the virtual environment (`.venv`) and installing all dependencies defined in `pyproject.toml`.
+    ```bash
+    make install
+    ```
+    *(Executes: `uv sync`)*
+
+
+## MLFlow Training Workflow (New)
+
+Lab 3 introduces a complete ML lifecycle. To reproduce the model from scratch:
+
+### 1. Train and Track Experiments
+Run the training script to fine-tune MobileNetV2 on the Pet dataset. This script runs multiple experiments (grid search) and logs results to the local `mlruns/` directory.
 ```bash
-git clone https://github.com/pina131714/MLOps-Lab2.git
-cd MLOps-Lab2
+uv run python -m mylib.train
 ```
 
-Run Makefile `install` target: The `Makefile` simplifies environment setup by synchronizing the virtual environment (`.venv`) and installing all dependencies defined in `pyproject.toml`.
+### 2. Visualize results
+Launch the MLFlow UI to inspect accuracy curves and compare run parameters.
 ```bash
-make install
+mlflow ui
 ```
+Open `http://127.0.0.1:5000` in your browser.
 
-This command executes: `uv sync 
+### 3. Serialize Best Model
+Run the serialization script. This queries MLFlow for the run with the highest validation accuracy and exports it to `model.onnx` and `class_labels.json`.
+```bash
+uv run python -m mylib.serialize
+```
+ 
 
 ## Usage
-1. Command Line Interface (CLI)
-The CLI still functions for local testing and debugging:
+Once `model.onnx` is generated, the standard CLI and API interfaces work exactly as before, but now provide real predictions.
+
+### 1. Command Line Interface (CLI)
 
 | Command | Description | Example |
 | :--- | :--- | :--- |
-| `predict` | Gets a random class prediction. | `uv run python -m cli.cli predict tiger.jpg` |
-| `info` | Prints image metadata. | `uv run python -m cli.cli info tiger.jpg` |
+| `predict` | Predict the breed of a pet image. | `uv run python -m cli.cli predict my_dog.jpg` |
+| `info` | Prints image metadata. | `uv run python -m cli.cli info my_dog.jpg` |
 | `resize` | Resizes and saves the image. | `uv run python -m cli.cli resize tiger.jpg -w 100 -h 100 -o resized.jpg` |
 | `grayscale` | Converts image to grayscale. | `uv run python -m cli.cli grayscale tiger.jpg -o gray.jpg` |
 | `rotate` | Rotates the image by an angle. | `uv run python -m cli.cli rotate tiger.jpg 90 -o rotated.jpg` |
-| `normalize` | Normalizes pixel values to [0, 1]. | `uv run python -m cli.cli normalize tiger.jpg` |
+| `normalize` | Normalizes pixel values to [0, 1]. | `uv run python -m cli.cli normalize my_dog.jpg` |
 
-2. Deployed Services
-The primary interaction points for the application are the deployed services:
+### 2. Deployed Services
+The primary interaction points for the application are the deployed services. The application is deployed automatically via the CI/CD pipeline:
 - API (Backend): Accessible via your Render public URL (e.g., `https://mlops-lab2-api.onrender.com/docs`).  
 - GUI (Frontend): Accessible via your Hugging Face Space URL (e.g., `https://huggingface.co/spaces/pina131714/mlops-lab2-gui`).
 
-## Testing
-The project includes unit and integration tests for all components (logic, CLI and API). The project maintains the same testing standards from Lab 1.
 
-### Running Tests
-Use the `Makefile` to run the test suite:
+## Testing
+The project includes unit and integration tests for all components (logic, CLI and API). The project maintains the same testing standards from Lab 1. 
+The testing now includes checks for model artifact existence (`model.onnx`).
 ```bash
 make test
 ```
-This command executes: `uv run pytest tests/ -vv --cov=mylib --cov=api --cov=cli`
 
 ## Continuous Integration / Continuous Delivery (CI/CD)
+
 The pipeline is managed by the `CICD.yml` workflow, which ensures code quality and automatic deployment.
 
 ### CI/CD Pipeline Status
 The badge above reflects the status of the CICD workflow, which encompasses all tests and deployment jobs.
 
-### Automated Pipeline (CICD.yml)
-The pipeline executes the full lifecycle of the application:
-1. Build: Runs `make install`, `make format`, `make lint`, and `make test`.
-2. Deploy API (`deploy` job):
-   - Logs into Docker Hub using secrets.
-   - Builds, tags, and pushes the new Docker image (`mlops-lab2-api:latest`).
-   - Triggers the Render deployment hook.
-3. Deploy GUI (`deploy-hf` job):
-   - Switches to the `hf-space` branch.
-   - Pushes the `app.py` and `requirements.txt` to the Hugging Face Space.
+### Automated Pipeline
+1.  **Build & Test:** Installs dependencies, runs linting/formatting, and verifies that `model.onnx` exists.
+2.  **Deploy API:** Builds the Docker image (copying the ONNX model inside) and pushes to Docker Hub, then triggers Render.
+3.  **Deploy GUI:** Syncs the Gradio frontend to Hugging Face Spaces.
 
 ### Makefile Commands
 The `Makefile` defines the necessary automation targets used by the CI/CD pipeline:
@@ -112,8 +140,8 @@ The `Makefile` defines the necessary automation targets used by the CI/CD pipeli
 | Target | Command | Purpose |
 | :--- | :--- | :--- |
 | `make install` | `uv sync` | Installs/syncs all Python dependencies. |
-| `make format` | `uv run black ...` | Runs the Black formatter on all source code. |
-| `make lint` | `uv run pylint ...` | Runs Pylint for static analysis. |
-| `make test` | `uv run pytest ...` | Executes all tests and generates coverage data. |
+| `make format` | `uv run black ...` | Formats code. |
+| `make lint` | `uv run pylint ...` | Lints code using `.pylintrc`. |
+| `make test` | `uv run pytest ...` | Runs all tests. |
 | `make refactor` | `make format lint` | Runs formatting followed by linting. |
-| `make all` | `make install format lint test` | Executes the full CI sequence locally or in the pipeline. |
+| `make all` | ... | Runs the full CI sequence. |
