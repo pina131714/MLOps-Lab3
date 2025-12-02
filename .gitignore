@@ -218,4 +218,5 @@ results/
 
 # Trained models and artifacts
 *.onnx
+*.onnx.data
 *.json
