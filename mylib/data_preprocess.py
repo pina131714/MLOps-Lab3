@@ -2,6 +2,8 @@
 Data loading and preprocessing utilities for the Oxford-IIIT Pet Dataset.
 """
 import os
+import torch
+import random
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
 
