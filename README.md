@@ -1,0 +1,14 @@
+---
+title: Mlops Lab3 Gui
+emoji: 👀
+colorFrom: blue
+colorTo: green
+sdk: gradio
+sdk_version: 6.0.2
+app_file: app.py
+pinned: false
+license: mit
+short_description: Lab3 GUI for MLOps subject
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
