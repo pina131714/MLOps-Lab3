@@ -22,7 +22,7 @@ def main():
     # Filter by the specific model name we used in train.py
     try:
         versions = client.search_model_versions(f"name='{MODEL_NAME}'")
-    except Exception as e:
+    except (IOError, ValueError) as e:
         print(f"Error querying MLFlow: {e}")
         print("Did you run the training script yet?")
         return
@@ -55,7 +55,7 @@ def main():
                 best_run_id = run_id
                 best_version = version
                 
-        except Exception as e:
+        except (IOError, ValueError) as e:
             print(f"   Could not process version {version.version}: {e}")
 
     if not best_run_id:
@@ -76,7 +76,7 @@ def main():
     model.eval()
 
     # 5. Serialize to ONNX
-    print(f"Exporting model to ONNX format (opset 18)...")
+    print("Exporting model to ONNX format (opset 18)...")
     
     # Create dummy input matching the input size (Batch=1, Channels=3, H=224, W=224)
     dummy_input = torch.randn(1, 3, 224, 224)

@@ -112,9 +112,7 @@ def create_data_loaders(batch_size: int, seed: int = 42) -> tuple:
 
 # --- Debugging/Verification (optional, for local run) ---
 if __name__ == "__main__":
-    import torch
-    import random
-    
+
     # Test execution
     print("Starting data loading process...")
     try:
@@ -132,6 +130,6 @@ if __name__ == "__main__":
         # Verify normalization (mean should be close to 0, std close to 1)
         print(f"Sample mean (should be ~0.0): {images[0].mean()}")
         
-    except Exception as e:
+	except (IOError, ValueError) as e:
         print(f"An error occurred during data loading: {e}")
         print("Ensure PyTorch and Torchvision dependencies are installed (uv sync)!")

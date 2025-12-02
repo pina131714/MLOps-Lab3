@@ -59,7 +59,6 @@ def train_single_run(model, criterion, optimizer, dataloaders, config, seed, run
     
     with mlflow.start_run(run_name=run_name) as run:
         print(f"\n--- Starting Run: {run_name} ---")
-        run_id = run.info.run_id
         
         # Log params
         mlflow.log_params({
@@ -78,7 +77,7 @@ def train_single_run(model, criterion, optimizer, dataloaders, config, seed, run
         
         # Log class labels
         class_labels_path = "class_labels.json"
-        with open(class_labels_path, 'w') as f:
+        with open(class_labels_path, 'w', encoding="utf-8") as f:
             json.dump(class_labels, f)
         mlflow.log_artifact(class_labels_path)
         if os.path.exists(class_labels_path):

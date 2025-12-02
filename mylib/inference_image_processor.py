@@ -20,7 +20,7 @@ def _load_model_artifacts():
     """
     Internal function to load the ONNX model and class labels.
     """
-    global _ONNX_SESSION, _CLASS_LABELS
+    global _ONNX_SESSION, _CLASS_LABELS # pylint: disable=global-statement
     
     if _ONNX_SESSION is None:
         model_path = "model.onnx"
@@ -31,7 +31,7 @@ def _load_model_artifacts():
             return
 
         # Requirement: Get the class labels (read the JSON file)
-        with open(labels_path, "r") as f:
+		with open(labels_path, "r", encoding="utf-8") as f:
             _CLASS_LABELS = json.load(f)
             
         # Requirement: Assign the sess_options to an instance of SessionOptions()
@@ -113,7 +113,7 @@ def predict_image(image: Image.Image) -> str:
         
         return _CLASS_LABELS[predicted_idx]
         
-    except Exception as e:
+	except (IOError, ValueError) as e:
         return f"Prediction Error: {str(e)}"
 
 
