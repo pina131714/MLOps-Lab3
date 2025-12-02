@@ -3,7 +3,7 @@ name = "mlops-lab3"
 version = "0.1.0"
 description = "Continuous Integration using GitHub Actions"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.12"
 dependencies = [
     "black>=25.9.0",
     "click>=8.3.0",
