@@ -9,7 +9,7 @@ format:
 	uv run black mylib/*.py cli/*.py api/*.py
 
 lint:
-	uv run pylint --disable=R,C --ignore-patterns=test_.*\.py mylib/*.py cli/*.py api/*.py
+	uv run pylint --rcfile=.pylintrc --ignore-patterns=test_.*\.py mylib/*.py cli/*.py api/*.py
 
 refactor: format lint
 
