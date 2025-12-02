@@ -1,5 +1,5 @@
-# Base image with Python 3.13
-FROM python:3.13-slim AS base
+# Base image with Python 3.11
+FROM python:3.11-slim AS base
 
 # Recommended environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -34,6 +34,10 @@ COPY --from=builder /usr/local /usr/local
 COPY api ./api
 COPY mylib ./mylib
 COPY templates ./templates
+# Copy files for the serialized model (must be present locally)
+COPY model.onnx .
+COPY model.onnx.data* .
+COPY class_labels.json .
 # Expose the port associated with the API created with FastAPI
 EXPOSE 8000
 # Default command: it starts the API with uvicorn
