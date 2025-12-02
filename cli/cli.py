@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 
 # Import your new image processing functions
-from mylib.image_processor import (
+from mylib.inference_image_processor import (
     predict_image,
     resize_image,
     convert_to_grayscale,
@@ -29,7 +29,7 @@ def cli():
 @click.argument("filepath", type=click.Path(exists=True))
 def predict_cli(filepath):
     """
-    Predicts the class of an image (randomly).
+    Predicts the class of an image using the ONNX model.
 
     Example:
         uv run python -m cli.cli predict path/to/your/image.jpg
@@ -37,7 +37,13 @@ def predict_cli(filepath):
     try:
         with Image.open(filepath) as img:
             prediction = predict_image(img)
-        click.echo(click.style(f"Prediction: {prediction}", fg="green"))
+        
+        # Check if the logic returned an error string
+        if prediction.startswith("Error") or prediction.startswith("Prediction Error"):
+            click.echo(click.style(prediction, fg="red"))
+        else:
+            click.echo(click.style(f"Prediction: {prediction}", fg="green"))
+            
     except (IOError, ValueError) as e:
         # Catch specific image loading or data conversion errors
         click.echo(click.style(f"Error processing image: {e}", fg="red"))
