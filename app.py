@@ -62,7 +62,7 @@ iface = gr.Interface(
     fn=random_prediction_api,
     inputs=image_input,
     outputs=prediction_output,
-    title="MLOps Lab 23 Random Image Classifier GUI",
+    title="MLOps Lab 3 Image Classifier GUI",
     description=f"A demo application using Gradio to send images to the containerized FastAPI backend (at {RENDER_API_URL}) for pet class predictions."
 )
 
