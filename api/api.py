@@ -9,7 +9,7 @@ from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 
 # Import your image processing functions
-from mylib.image_processor import (
+from mylib.inference_image_processor import (
     predict_image,
     resize_image,
     convert_to_grayscale,
@@ -22,7 +22,7 @@ from mylib.image_processor import (
 # Create an instance of FastAPI
 app = FastAPI(
     title="API for Image Processing",
-    description="API to perform image processing operations using mylib.image_processor",
+    description="API to perform image processing operations using mylib.inference_image_processor",
     version="1.0.0",
 )
 
@@ -54,13 +54,20 @@ def home(request: Request):
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """
-    Predicts the class of an image (randomly).
+    Predicts the class of an image using the trained MobileNetV2 model.
     Expects a 'multipart/form-data' with a 'file' field.
     """
     try:
         image = await load_image_from_uploadfile(file)
         prediction = predict_image(image)
+        
+        # Check if the prediction string indicates an internal error
+        if prediction.startswith("Error") or prediction.startswith("Prediction Error"):
+            raise HTTPException(status_code=500, detail=prediction)
+            
         return {"prediction": prediction}
+    except HTTPException as he:
+        raise he # Re-raise HTTP exceptions directly
     except Exception as e:
         # Pylint Fix (W0707): Explicit exception chaining
         raise HTTPException(status_code=500, detail=str(e)) from e
