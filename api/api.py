@@ -200,25 +200,37 @@ async def blur(
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-@app.post("/normalize")
+@app.post("/normalize", response_class=StreamingResponse)
 async def normalize(file: UploadFile = File(...)):
     """
-    Normalizes an image and returns its statistics.
+    Normalizes an image and returns a visualization of the normalized array.
     Expects 'multipart/form-data' with a 'file' field.
+    Returns: A downloadable PNG image representing the normalized data.
     """
     try:
         image = await load_image_from_uploadfile(file)
+        
+        # Get the normalized numpy array (values roughly 0-1 or standardized)
         norm_array = normalize_image(image)
         
-        # Returning the full array as JSON is too large
-        # Return statistics instead, similar to the CLI
-        return {
-            "message": "Image normalized successfully",
-            "shape": norm_array.shape,
-            "mean": float(np.mean(norm_array)),
-            "min": float(np.min(norm_array)),
-            "max": float(np.max(norm_array)),
-        }
+        # To make it downloadable/viewable, we must convert the float array back to uint8 [0-255]
+        # We perform a simple Min-Max scaling to map the values to 0-255 for visualization
+        norm_min, norm_max = norm_array.min(), norm_array.max()
+        norm_visual = (norm_array - norm_min) / (norm_max - norm_min) * 255.0
+        norm_visual = norm_visual.astype(np.uint8)
+        
+        # Create a PIL image from the array
+        visual_image = Image.fromarray(norm_visual)
+        
+        buffer = io.BytesIO()
+        visual_image.save(buffer, format="PNG")
+        buffer.seek(0)
+        
+        return StreamingResponse(
+            buffer,
+            media_type="image/png",
+            headers={"Content-Disposition": "attachment; filename=normalized_visualization.png"}
+        )
     except Exception as e:
         # Pylint Fix (W0707): Explicit exception chaining
         raise HTTPException(status_code=500, detail=str(e)) from e
