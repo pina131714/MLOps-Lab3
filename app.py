@@ -4,7 +4,7 @@ import io
 import os
 from PIL import Image
 
-RENDER_API_URL = "https://mlops-lab3-api.onrender.com"
+RENDER_API_URL = "https://mlops-lab3-api-latest.onrender.com"
 PREDICT_ENDPOINT = f"{RENDER_API_URL}/predict"
 
 
