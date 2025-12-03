@@ -28,7 +28,7 @@ jobs:
     
     steps:
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space-main@v1
+        uses: jlumbroso/free-disk-space@v1.3.1
         # This action removes pre-installed tools (like Android SDKs, .NET, Haskell)
         # that you don't need for a Python/Docker build.
         # It frees up ~30GB of space.
