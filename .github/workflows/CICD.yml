@@ -24,9 +24,21 @@ jobs:
     needs: build   # it is not executed if build fails
     env:
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/mlops-lab3-api:latest
-          RENDER_HOOK_BASE_URL: https://api.render.com/deploy/srv-d4ni35khg0os739d2l5g?key=
+          RENDER_HOOK_BASE_URL: https://api.render.com/deploy/srv-d4ni35khg0os739d2l5g?key
     
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space-main@v1
+        # This action removes pre-installed tools (like Android SDKs, .NET, Haskell)
+        # that you don't need for a Python/Docker build.
+        # It frees up ~30GB of space.
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4 
         with:
