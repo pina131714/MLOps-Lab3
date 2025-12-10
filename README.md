@@ -111,8 +111,8 @@ Once `model.onnx` is generated, the standard CLI and API interfaces work exactly
 
 ### 2. Deployed Services
 The primary interaction points for the application are the deployed services. The application is deployed automatically via the CI/CD pipeline:
-- API (Backend): Accessible via your Render public URL (e.g., `https://mlops-lab2-api.onrender.com/docs`).  
-- GUI (Frontend): Accessible via your Hugging Face Space URL (e.g., `https://huggingface.co/spaces/pina131714/mlops-lab2-gui`).
+- API (Backend): Accessible via your Render public URL (e.g., `https://mlops-lab3-api-latest.onrender.com/docs`). 
+- GUI (Frontend): Accessible via your Hugging Face Space URL (e.g., `https://huggingface.co/spaces/pina131714/mlops-lab3-gui`).
 
 
 ## Testing
